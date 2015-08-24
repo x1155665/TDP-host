@@ -27,7 +27,7 @@ Public Class Form1
         If modelLoc.FileName = "" Then
             loadDone = False
             Return
-        End If      
+        End If
         Shell("cmd /c slice " + modelLoc.FileName + " > " + Application.StartupPath + "/modelProp.txt & exit", AppWinStyle.Hide, True) '获取模型信息
         If File.Exists(Application.StartupPath + "/modelProp.txt") Then
             Dim srVar As StreamReader
@@ -215,7 +215,7 @@ Public Class Form1
                 My.Computer.FileSystem.CreateDirectory(Application.StartupPath + "/temp")
             End If
         Catch
-            MessageBox.Show ("Folder initialization error!")
+            MessageBox.Show("Folder initialization error!")
             loadDone = False
             Return
         End Try
@@ -269,7 +269,7 @@ Public Class Form1
         xHeightp = Int(xHeight * Scale) / 100.0
         yHeightp = Int(yHeight * Scale) / 100.0
         zHeightp = Int(zHeight * Scale) / 100.0
-        Label9.Text = xHeightp.ToString + "*" + yHeightp.ToString(+"*" + zHeightp.ToString)
+        Label9.Text = xHeightp.ToString + "*" + yHeightp.ToString + "*" + zHeightp.ToString
     End Sub
 
 
