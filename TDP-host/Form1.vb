@@ -15,61 +15,19 @@ Public Class Form1
     Dim yHeightp As Double
     Dim zHeightp As Double
     Dim maxLayer As Integer
-    Dim pixel_per_mm_length As Integer = 11.8  '需要进一步测试
+    Dim pixel_per_mm_length As Integer = 11.8  'TBD
     Dim pixel_per_mm_width As Integer = 11.8
+
+    '=====================================================
+    'Arduino communication
+    '======================================================
     Private Sub GetSerialPortNames()
         For Each serialport As String In My.Computer.Ports.SerialPortNames
             cmbPort.Items.Add(serialport)
         Next
     End Sub
 
-    Private Sub GetModelProp()
-        If modelLoc.FileName = "" Then
-            loadDone = False
-            Return
-        End If
-        Shell("cmd /c slice " + modelLoc.FileName + " > " + Application.StartupPath + "/modelProp.txt & exit", AppWinStyle.Hide, True) '获取模型信息
-        If File.Exists(Application.StartupPath + "/modelProp.txt") Then
-            Dim srVar As StreamReader
-            srVar = File.OpenText(Application.StartupPath + "/modelProp.txt")
-            Dim tempStr As String = srVar.ReadToEnd()
-            srVar.Close()
-            xHeight = getValue("xhi", tempStr) - getValue("xlo", tempStr)
-            yHeight = getValue("yhi", tempStr) - getValue("ylo", tempStr)
-            zHeight = getValue("zhi", tempStr)
-            Label9.Text = xHeight.ToString + " * " + yHeight.ToString + " * " + zHeight.ToString
-            Label9.Visible = True
-            txtScale.Text = "100"
-            loadDone = True
-        Else
-            MessageBox.Show("list.txt does not exist", "ERROR")
-            loadDone = False
-        End If
-    End Sub
-
-    Private Function getValue(aString As String, ByVal tempStr As String)
-        Dim pos As Integer = InStr(tempStr, """" + aString + """: ")
-        pos += 6 '位置移动到数字第一位
-        Dim srValue As String = ""
-        Do Until tempStr.Chars(pos) = "."
-            srValue += tempStr.Chars(pos)
-            pos += 1
-        Loop
-        srValue += tempStr.Chars(pos) '小数点
-        srValue += tempStr.Chars(pos + 1)
-        srValue += tempStr.Chars(pos + 2)
-        Dim value As Double
-        Try
-            value = CDbl(srValue)
-        Catch
-            MessageBox.Show("Slice error!")
-            MessageBox.Show("Slice command:")
-            MessageBox.Show("cmd /c slice " + modelLoc.FileName + " > " + Application.StartupPath + "/modelProp.txt")
-        End Try
-        Return value
-    End Function
-
-    Sub ShowString(ByVal myString As String)
+    Sub ShowString(ByVal myString As String) 'show the received string
         txtIn.AppendText(myString)
     End Sub
 
@@ -118,13 +76,6 @@ Public Class Form1
         End Try
     End Sub
 
-    Private Sub Form1_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
-        If sp.IsOpen() Then
-            MessageBox.Show("Disconnect before closing")
-            e.Cancel = True
-        End If
-    End Sub
-
     Private Sub SerialPort_DataReceived(ByVal sender As Object, ByVal e As System.IO.Ports.SerialDataReceivedEventArgs) Handles sp.DataReceived
         Dim str As String = sp.ReadExisting()
         Invoke(myDelegate, str)
@@ -137,11 +88,77 @@ Public Class Form1
         End If
     End Sub
 
-    Private Sub txtMessage_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtMessage.KeyPress
+    Private Sub txtMessage_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtMessage.KeyPress 'so that the typed codes can be directly sent by pressing enter
         If Convert.ToInt32(e.KeyChar) = 13 Then btnSend_Click(sender, e)
     End Sub
 
-    ' Specifies what happens when the user clicks the Button. 
+    Private Sub btnRefresh_Click(sender As Object, e As EventArgs) Handles btnRefresh.Click
+        Try
+            GetSerialPortNames()
+            cmbPort.SelectedIndex = 0
+        Catch
+            MsgBox("No ports connected.")
+        End Try
+    End Sub
+
+    Private Sub Form1_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
+        If sp.IsOpen() Then
+            MessageBox.Show("Disconnect before closing")
+            e.Cancel = True
+        End If
+    End Sub
+
+    '=============================================
+    'printing
+    '=============================================
+
+    Private Sub GetModelProp()
+        If modelLoc.FileName = "" Then
+            loadDone = False
+            Return
+        End If
+        Shell("cmd /c slice " + modelLoc.FileName + " > " + Application.StartupPath + "/modelProp.txt & exit", AppWinStyle.Hide, True) '获取模型信息
+        If File.Exists(Application.StartupPath + "/modelProp.txt") Then
+            Dim srVar As StreamReader
+            srVar = File.OpenText(Application.StartupPath + "/modelProp.txt")
+            Dim tempStr As String = srVar.ReadToEnd()
+            srVar.Close()
+            xHeight = getValue("xhi", tempStr) - getValue("xlo", tempStr)
+            yHeight = getValue("yhi", tempStr) - getValue("ylo", tempStr)
+            zHeight = getValue("zhi", tempStr)
+            Label9.Text = xHeight.ToString + " * " + yHeight.ToString + " * " + zHeight.ToString
+            Label9.Visible = True
+            txtScale.Text = "100"
+            loadDone = True
+        Else
+            MessageBox.Show("list.txt does not exist", "ERROR")
+            loadDone = False
+        End If
+    End Sub
+
+    Private Function getValue(aString As String, ByVal tempStr As String)
+        Dim pos As Integer = InStr(tempStr, """" + aString + """: ")
+        pos += 6 '位置移动到数字第一位
+        Dim srValue As String = ""
+        Do Until tempStr.Chars(pos) = "."
+            srValue += tempStr.Chars(pos)
+            pos += 1
+        Loop
+        srValue += tempStr.Chars(pos) '小数点
+        srValue += tempStr.Chars(pos + 1)
+        srValue += tempStr.Chars(pos + 2)
+        Dim value As Double
+        Try
+            value = CDbl(srValue)
+        Catch
+            MessageBox.Show("Slice error!")
+            MessageBox.Show("Slice command:")
+            MessageBox.Show("cmd /c slice " + modelLoc.FileName + " > " + Application.StartupPath + "/modelProp.txt")
+        End Try
+        Return value
+    End Function
+
+
     Private Sub btnPrint_Click(sender As Object, e As EventArgs) Handles btnPrint.Click
         If sliceDone = False Then
             MessageBox.Show("Model not sliced yet!")
@@ -176,8 +193,6 @@ Public Class Form1
         Dim margins As New Margins(100, 100, 100, 100)
         pd.DefaultPageSettings.Margins = margins
 
-
-
         ' Draw a picture.
         ev.Graphics.DrawImage(slice.Image, (100), (100))
 
@@ -185,14 +200,7 @@ Public Class Form1
         ev.HasMorePages = False
     End Sub
 
-    Private Sub btnRefresh_Click(sender As Object, e As EventArgs) Handles btnRefresh.Click
-        Try
-            GetSerialPortNames()
-            cmbPort.SelectedIndex = 0
-        Catch
-            MsgBox("No ports connected.")
-        End Try
-    End Sub
+    
 
     Private Sub btnChooseModel_Click(sender As Object, e As EventArgs) Handles btnChooseModel.Click
         modelLoc.ShowDialog() '选择模型
