@@ -20,7 +20,9 @@ Public Class Form1
 
     '=====================================================
     'Arduino communication
+    'Reference:Visual Basic Serial Monitor (http://www.multiwingspan.co.uk/arduino.php?page=vb1 )
     '======================================================
+
     Private Sub GetSerialPortNames()
         For Each serialport As String In My.Computer.Ports.SerialPortNames
             cmbPort.Items.Add(serialport)
