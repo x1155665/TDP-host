@@ -16,7 +16,7 @@ Public Class Form1
     Dim zHeightp As Double
     Dim maxLayer As Integer
     Dim pixel_per_mm_length As Integer = 11.8  'TBD
-    Dim pixel_per_mm_width As Integer = 11.8
+    Dim pixel_per_mm_width As Integer = 11.8    'TBD
 
     '=====================================================
     'Arduino communication
@@ -29,7 +29,8 @@ Public Class Form1
         Next
     End Sub
 
-    Sub ShowString(ByVal myString As String) 'show the received string
+    Sub ShowString(ByVal myString As String)
+        'show the received string
         txtIn.AppendText(myString)
     End Sub
 
@@ -90,7 +91,8 @@ Public Class Form1
         End If
     End Sub
 
-    Private Sub txtMessage_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtMessage.KeyPress 'so that the typed codes can be directly sent by pressing enter
+    Private Sub txtMessage_KeyPress(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyPressEventArgs) Handles txtMessage.KeyPress
+        'so that the typed codes can be directly sent by pressing enter
         If Convert.ToInt32(e.KeyChar) = 13 Then btnSend_Click(sender, e)
     End Sub
 
@@ -111,15 +113,32 @@ Public Class Form1
     End Sub
 
     '=============================================
-    'printing
+    'Printing
     '=============================================
 
+    Private Sub btnChooseModel_Click(sender As Object, e As EventArgs) Handles btnChooseModel.Click
+        modelLoc.ShowDialog() 'show choosing dialog
+        Label5.Text = modelLoc.SafeFileName 'Only the file name are shown, no path info
+        Label5.Visible = True
+        sliceDone = False
+        GetModelProp()
+    End Sub
+
     Private Sub GetModelProp()
+        'Get the properties of the model: height, width, lehgth
+
+        'Make sure that a model is already selected.
         If modelLoc.FileName = "" Then
             loadDone = False
             Return
         End If
-        Shell("cmd /c slice " + modelLoc.FileName + " > " + Application.StartupPath + "/modelProp.txt & exit", AppWinStyle.Hide, True) '获取模型信息
+
+        'Use Freesteel Slicer, which should be installed before running this function, to find out the properties of the model
+        'More info about Fresteel Slicer: http://www.freesteel.co.uk/wpblog/slicer/
+        'The output of Freesteel Slicer will be exported to a txt file named modelProp.txt, which will be analysed later
+        Shell("cmd /c slice " + modelLoc.FileName + " > " + Application.StartupPath + "/modelProp.txt & exit", AppWinStyle.Hide, True)
+
+        'Deal with modelProp.txt
         If File.Exists(Application.StartupPath + "/modelProp.txt") Then
             Dim srVar As StreamReader
             srVar = File.OpenText(Application.StartupPath + "/modelProp.txt")
@@ -131,7 +150,7 @@ Public Class Form1
             Label9.Text = xHeight.ToString + " * " + yHeight.ToString + " * " + zHeight.ToString
             Label9.Visible = True
             txtScale.Text = "100"
-            loadDone = True
+            loadDone = True 'Enable the slice button
         Else
             MessageBox.Show("list.txt does not exist", "ERROR")
             loadDone = False
@@ -139,14 +158,16 @@ Public Class Form1
     End Sub
 
     Private Function getValue(aString As String, ByVal tempStr As String)
-        Dim pos As Integer = InStr(tempStr, """" + aString + """: ")
-        pos += 6 '位置移动到数字第一位
+        'Get the value of aString？ Well, hard to explain. You will understand as soon as you check out modelProp.txt
+
+        Dim pos As Integer = InStr(tempStr, """" + aString + """: ") 'Locate aString in tempStr
+        pos += 6 'Locate the begin position of the value
         Dim srValue As String = ""
         Do Until tempStr.Chars(pos) = "."
             srValue += tempStr.Chars(pos)
             pos += 1
         Loop
-        srValue += tempStr.Chars(pos) '小数点
+        srValue += tempStr.Chars(pos) 'dot
         srValue += tempStr.Chars(pos + 1)
         srValue += tempStr.Chars(pos + 2)
         Dim value As Double
@@ -154,12 +175,51 @@ Public Class Form1
             value = CDbl(srValue)
         Catch
             MessageBox.Show("Slice error!")
+            'When the tranformation of srValue to a number(double) goes wrong, Freesteel Slicer is the most possible suspect.
             MessageBox.Show("Slice command:")
             MessageBox.Show("cmd /c slice " + modelLoc.FileName + " > " + Application.StartupPath + "/modelProp.txt")
         End Try
         Return value
     End Function
 
+    Private Sub txtScale_TextChanged(sender As Object, e As EventArgs) Handles txtScale.TextChanged
+        If txtScale.Text = "" Then Return
+        Dim Scale As Double
+        Try
+            Scale = CDbl(txtScale.Text)
+        Catch
+            Return
+        End Try
+        xHeightp = Int(xHeight * Scale) / 100.0
+        yHeightp = Int(yHeight * Scale) / 100.0
+        zHeightp = Int(zHeight * Scale) / 100.0
+        Label9.Text = xHeightp.ToString + "*" + yHeightp.ToString + "*" + zHeightp.ToString
+    End Sub
+
+    Private Sub btnSlice_Click(sender As Object, e As EventArgs) Handles btnSlice.Click
+        If loadDone = False Then
+            MessageBox.Show("Model not loaded yet!")
+            Return
+        End If
+        Try
+            If My.Computer.FileSystem.DirectoryExists(Application.StartupPath + "/temp") Then '初始化工作文件夹
+                My.Computer.FileSystem.DeleteDirectory(Application.StartupPath + "/temp", FileIO.DeleteDirectoryOption.DeleteAllContents)
+                My.Computer.FileSystem.CreateDirectory(Application.StartupPath + "/temp")
+            Else
+                My.Computer.FileSystem.CreateDirectory(Application.StartupPath + "/temp")
+            End If
+        Catch
+            MessageBox.Show("Folder initialization error!")
+            loadDone = False
+            Return
+        End Try
+        Shell("cmd /c slice -o " + Application.StartupPath + "/temp/slice.jpg -z0," + zHeight.ToString + "," + (CDbl(layerHeight.Text) / CDbl(txtScale.Text) * 100.0).ToString + " --height=" + Int(pixel_per_mm_length * yHeight).ToString + " --width=" + Int(pixel_per_mm_width * xHeight).ToString + " " + modelLoc.FileName + " & pause", AppWinStyle.NormalFocus, True) 'slice
+        sliceDone = True
+        maxLayer = Int(zHeight / (CDbl(layerHeight.Text) / CDbl(txtScale.Text) * 100.0))
+        TrackBar1.Minimum = 0
+        TrackBar1.Maximum = maxLayer
+        TrackBar1.Enabled = True
+    End Sub
 
     Private Sub btnPrint_Click(sender As Object, e As EventArgs) Handles btnPrint.Click
         If sliceDone = False Then
@@ -204,39 +264,6 @@ Public Class Form1
 
     
 
-    Private Sub btnChooseModel_Click(sender As Object, e As EventArgs) Handles btnChooseModel.Click
-        modelLoc.ShowDialog() '选择模型
-        Label5.Text = modelLoc.SafeFileName
-        Label5.Visible = True
-        sliceDone = False
-        GetModelProp()
-    End Sub
-
-    Private Sub btnSlice_Click(sender As Object, e As EventArgs) Handles btnSlice.Click
-        If loadDone = False Then
-            MessageBox.Show("Model not loaded yet!")
-            Return
-        End If
-        Try
-            If My.Computer.FileSystem.DirectoryExists(Application.StartupPath + "/temp") Then '初始化工作文件夹
-                My.Computer.FileSystem.DeleteDirectory(Application.StartupPath + "/temp", FileIO.DeleteDirectoryOption.DeleteAllContents)
-                My.Computer.FileSystem.CreateDirectory(Application.StartupPath + "/temp")
-            Else
-                My.Computer.FileSystem.CreateDirectory(Application.StartupPath + "/temp")
-            End If
-        Catch
-            MessageBox.Show("Folder initialization error!")
-            loadDone = False
-            Return
-        End Try
-        Shell("cmd /c slice -o " + Application.StartupPath + "/temp/slice.jpg -z0," + zHeight.ToString + "," + (CDbl(layerHeight.Text) / CDbl(txtScale.Text) * 100.0).ToString + " --height=" + Int(pixel_per_mm_length * yHeight).ToString + " --width=" + Int(pixel_per_mm_width * xHeight).ToString + " " + modelLoc.FileName + " & pause", AppWinStyle.NormalFocus, True) 'slice
-        sliceDone = True
-        maxLayer = Int(zHeight / (CDbl(layerHeight.Text) / CDbl(txtScale.Text) * 100.0))
-        TrackBar1.Minimum = 0
-        TrackBar1.Maximum = maxLayer
-        TrackBar1.Enabled = True
-    End Sub
-
     Private Sub TrackBar1_ValueChanged(sender As Object, e As EventArgs) Handles TrackBar1.ValueChanged
         Dim layer As Integer = Int(TrackBar1.Value)
         Dim foundFileStr As String
@@ -268,19 +295,7 @@ Public Class Form1
         printStop = True
     End Sub
 
-    Private Sub txtScale_TextChanged(sender As Object, e As EventArgs) Handles txtScale.TextChanged
-        If txtScale.Text = "" Then Return
-        Dim Scale As Double
-        Try
-            Scale = CDbl(txtScale.Text)
-        Catch
-            Return
-        End Try
-        xHeightp = Int(xHeight * Scale) / 100.0
-        yHeightp = Int(yHeight * Scale) / 100.0
-        zHeightp = Int(zHeight * Scale) / 100.0
-        Label9.Text = xHeightp.ToString + "*" + yHeightp.ToString + "*" + zHeightp.ToString
-    End Sub
+    
 
 
 End Class
