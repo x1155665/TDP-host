@@ -15,6 +15,8 @@ Public Class Form1
     Dim yHeightp As Double
     Dim zHeightp As Double
     Dim maxLayer As Integer
+    Dim targetTemperature As Double
+    Dim currentTemperature As Double
     Dim pixel_per_mm_length As Integer = 11.8  'TBD
     Dim pixel_per_mm_width As Integer = 11.8    'TBD
 
@@ -30,8 +32,15 @@ Public Class Form1
     End Sub
 
     Sub ShowString(ByVal myString As String)
-        'show the received string
-        txtIn.AppendText(myString)
+        'show the received string 
+        'filter temperature checking,
+        If InStr(myString, "current temperature:") + InStr(myString, "received:m105") + InStr(myString, "received:M105") = 0 Then
+            txtIn.AppendText(myString + Chr(10))
+        End If
+        If InStr(myString, "current temperature:") <> 0 Then
+            getTempVal(myString)
+           
+        End If
     End Sub
 
     Delegate Sub myMethodDelegate(ByVal [text] As String)
@@ -43,6 +52,9 @@ Public Class Form1
         cmbBaud.Items.AddRange(BaudRates)
         cmbBaud.SelectedIndex = 4
         btnDisconnect.Visible = False
+        btnSetTemp.Visible = False
+        currentTemp.Visible = False
+
         Try
             GetSerialPortNames()
             cmbPort.SelectedIndex = 0
@@ -60,6 +72,11 @@ Public Class Form1
                 cmbPort.Enabled = False
                 cmbBaud.Enabled = False
                 btnDisconnect.Visible = True
+
+                'enable thermo control
+                currentTemp.Visible = True
+                btnSetTemp.Visible = True
+                TimerCheckTemp.Enabled = True
             End If
         Catch
             sp.Close()
@@ -73,6 +90,9 @@ Public Class Form1
             btnDisconnect.Visible = False
             cmbPort.Enabled = True
             cmbBaud.Enabled = True
+            btnSetTemp.Visible = False
+            currentTemp.Visible = False
+            TimerCheckTemp.Enabled = False
             Exit Sub
         Catch
             MessageBox.Show("Error")
@@ -80,7 +100,7 @@ Public Class Form1
     End Sub
 
     Private Sub SerialPort_DataReceived(ByVal sender As Object, ByVal e As System.IO.Ports.SerialDataReceivedEventArgs) Handles sp.DataReceived
-        Dim str As String = sp.ReadExisting()
+        Dim str As String = sp.ReadLine()
         Invoke(myDelegate, str)
     End Sub
 
@@ -303,7 +323,30 @@ Public Class Form1
         printStop = True
     End Sub
 
-    
+    '==================================
+    'Thermo
+    '==================================
+    Private Sub btnSetTemp_Click(sender As Object, e As EventArgs) Handles btnSetTemp.Click
+        Try
+            targetTemperature = CDbl(txtTargetTemp.Text)
+            sp.WriteLine("M104 " + txtTargetTemp.Text) 'M104
+        Catch ex As Exception
+            MessageBox.Show("Please enter the target Temperature! And in the right way!")
+        End Try
+    End Sub
 
+
+    Private Sub TimerCheckTemp_Tick(sender As Object, e As EventArgs) Handles TimerCheckTemp.Tick
+        sp.WriteLine("M105")
+    End Sub
+
+    Private Sub getTempVal(ByVal Tempstr As String)
+        currentTemp.Text = ""
+        Dim pos As Integer = 20
+        Do Until pos >= Tempstr.Length
+            currentTemp.Text += Tempstr.Chars(pos)
+            pos += 1
+        Loop
+    End Sub
 
 End Class

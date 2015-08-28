@@ -22,6 +22,7 @@ Partial Class Form1
     '不要使用代码编辑器修改它。
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Me.components = New System.ComponentModel.Container()
         Me.BackgroundWorker1 = New System.ComponentModel.BackgroundWorker()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
         Me.btnRefresh = New System.Windows.Forms.Button()
@@ -53,6 +54,12 @@ Partial Class Form1
         Me.txtScale = New System.Windows.Forms.TextBox()
         Me.Label11 = New System.Windows.Forms.Label()
         Me.Label3 = New System.Windows.Forms.Label()
+        Me.txtTargetTemp = New System.Windows.Forms.TextBox()
+        Me.Label12 = New System.Windows.Forms.Label()
+        Me.Label13 = New System.Windows.Forms.Label()
+        Me.currentTemp = New System.Windows.Forms.Label()
+        Me.btnSetTemp = New System.Windows.Forms.Button()
+        Me.TimerCheckTemp = New System.Windows.Forms.Timer(Me.components)
         Me.GroupBox1.SuspendLayout()
         CType(Me.slice, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.TrackBar1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -137,23 +144,23 @@ Partial Class Form1
         '
         'txtIn
         '
-        Me.txtIn.Location = New System.Drawing.Point(423, 95)
+        Me.txtIn.Location = New System.Drawing.Point(423, 105)
         Me.txtIn.Multiline = True
         Me.txtIn.Name = "txtIn"
         Me.txtIn.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
-        Me.txtIn.Size = New System.Drawing.Size(395, 251)
+        Me.txtIn.Size = New System.Drawing.Size(395, 302)
         Me.txtIn.TabIndex = 1
         '
         'txtMessage
         '
-        Me.txtMessage.Location = New System.Drawing.Point(423, 356)
+        Me.txtMessage.Location = New System.Drawing.Point(423, 415)
         Me.txtMessage.Name = "txtMessage"
         Me.txtMessage.Size = New System.Drawing.Size(313, 21)
         Me.txtMessage.TabIndex = 2
         '
         'btnSend
         '
-        Me.btnSend.Location = New System.Drawing.Point(743, 354)
+        Me.btnSend.Location = New System.Drawing.Point(742, 413)
         Me.btnSend.Name = "btnSend"
         Me.btnSend.Size = New System.Drawing.Size(75, 23)
         Me.btnSend.TabIndex = 3
@@ -322,11 +329,62 @@ Partial Class Form1
         Me.Label3.Text = "Label3"
         Me.Label3.Visible = False
         '
+        'txtTargetTemp
+        '
+        Me.txtTargetTemp.Location = New System.Drawing.Point(203, 421)
+        Me.txtTargetTemp.Name = "txtTargetTemp"
+        Me.txtTargetTemp.Size = New System.Drawing.Size(45, 21)
+        Me.txtTargetTemp.TabIndex = 23
+        '
+        'Label12
+        '
+        Me.Label12.AutoSize = True
+        Me.Label12.Location = New System.Drawing.Point(26, 424)
+        Me.Label12.Name = "Label12"
+        Me.Label12.Size = New System.Drawing.Size(113, 12)
+        Me.Label12.TabIndex = 24
+        Me.Label12.Text = "Target temperature"
+        '
+        'Label13
+        '
+        Me.Label13.AutoSize = True
+        Me.Label13.Location = New System.Drawing.Point(26, 398)
+        Me.Label13.Name = "Label13"
+        Me.Label13.Size = New System.Drawing.Size(119, 12)
+        Me.Label13.TabIndex = 25
+        Me.Label13.Text = "Current temperature"
+        '
+        'currentTemp
+        '
+        Me.currentTemp.AutoSize = True
+        Me.currentTemp.Location = New System.Drawing.Point(201, 400)
+        Me.currentTemp.Name = "currentTemp"
+        Me.currentTemp.Size = New System.Drawing.Size(0, 12)
+        Me.currentTemp.TabIndex = 26
+        '
+        'btnSetTemp
+        '
+        Me.btnSetTemp.Location = New System.Drawing.Point(281, 419)
+        Me.btnSetTemp.Name = "btnSetTemp"
+        Me.btnSetTemp.Size = New System.Drawing.Size(73, 23)
+        Me.btnSetTemp.TabIndex = 27
+        Me.btnSetTemp.Text = "Set"
+        Me.btnSetTemp.UseVisualStyleBackColor = True
+        '
+        'TimerCheckTemp
+        '
+        Me.TimerCheckTemp.Interval = 1000
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(830, 454)
+        Me.Controls.Add(Me.btnSetTemp)
+        Me.Controls.Add(Me.currentTemp)
+        Me.Controls.Add(Me.Label13)
+        Me.Controls.Add(Me.Label12)
+        Me.Controls.Add(Me.txtTargetTemp)
         Me.Controls.Add(Me.Label3)
         Me.Controls.Add(Me.Label11)
         Me.Controls.Add(Me.txtScale)
@@ -389,5 +447,11 @@ Partial Class Form1
     Friend WithEvents txtScale As System.Windows.Forms.TextBox
     Friend WithEvents Label11 As System.Windows.Forms.Label
     Friend WithEvents Label3 As System.Windows.Forms.Label
+    Friend WithEvents txtTargetTemp As System.Windows.Forms.TextBox
+    Friend WithEvents Label12 As System.Windows.Forms.Label
+    Friend WithEvents Label13 As System.Windows.Forms.Label
+    Friend WithEvents currentTemp As System.Windows.Forms.Label
+    Friend WithEvents btnSetTemp As System.Windows.Forms.Button
+    Friend WithEvents TimerCheckTemp As System.Windows.Forms.Timer
 
 End Class
