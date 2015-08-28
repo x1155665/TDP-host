@@ -201,8 +201,10 @@ Public Class Form1
             MessageBox.Show("Model not loaded yet!")
             Return
         End If
+
+        'Initialization of the working folder(./temp)
         Try
-            If My.Computer.FileSystem.DirectoryExists(Application.StartupPath + "/temp") Then '初始化工作文件夹
+            If My.Computer.FileSystem.DirectoryExists(Application.StartupPath + "/temp") Then
                 My.Computer.FileSystem.DeleteDirectory(Application.StartupPath + "/temp", FileIO.DeleteDirectoryOption.DeleteAllContents)
                 My.Computer.FileSystem.CreateDirectory(Application.StartupPath + "/temp")
             Else
@@ -213,56 +215,18 @@ Public Class Form1
             loadDone = False
             Return
         End Try
-        Shell("cmd /c slice -o " + Application.StartupPath + "/temp/slice.jpg -z0," + zHeight.ToString + "," + (CDbl(layerHeight.Text) / CDbl(txtScale.Text) * 100.0).ToString + " --height=" + Int(pixel_per_mm_length * yHeight).ToString + " --width=" + Int(pixel_per_mm_width * xHeight).ToString + " " + modelLoc.FileName + " & pause", AppWinStyle.NormalFocus, True) 'slice
-        sliceDone = True
+
+        'Slice the model into pictures, the output jpg files are saved in the working folder
+        Shell("cmd /c slice -o " + Application.StartupPath + "/temp/slice.jpg -z0," + zHeight.ToString + "," + (CDbl(layerHeight.Text) / CDbl(txtScale.Text) * 100.0).ToString + " --height=" + Int(pixel_per_mm_length * yHeight).ToString + " --width=" + Int(pixel_per_mm_width * xHeight).ToString + " " + modelLoc.FileName, AppWinStyle.NormalFocus, True) 'slice
+        sliceDone = True 'Enable print button
+
+        'Initialzation of slice preview
         maxLayer = Int(zHeight / (CDbl(layerHeight.Text) / CDbl(txtScale.Text) * 100.0))
         TrackBar1.Minimum = 0
         TrackBar1.Maximum = maxLayer
         TrackBar1.Enabled = True
+
     End Sub
-
-    Private Sub btnPrint_Click(sender As Object, e As EventArgs) Handles btnPrint.Click
-        If sliceDone = False Then
-            MessageBox.Show("Model not sliced yet!")
-            Return
-        End If
-        btnStop.Visible = True
-        btnPrint.Visible = False
-        TrackBar1.Enabled = False
-        Dim foundFile As String = ""
-        Dim layer As Integer = 0
-        Do Until layer >= maxLayer
-            If printStop = True Then
-                printStop = False
-                Return
-            End If
-            TrackBar1.Value = layer
-            Try
-                pd.Print()
-                'MessageBox.Show(layer)
-            Catch ex As Exception
-                MessageBox.Show("An error occurred while printing", ex.ToString())
-            End Try
-            layer += 1
-        Loop
-
-        Return
-    End Sub
-
-    ' Specifies what happens when the PrintPage event is raised. 
-    Private Sub pd_PrintPage(sender As Object, ev As PrintPageEventArgs) Handles pd.PrintPage
-
-        Dim margins As New Margins(100, 100, 100, 100)
-        pd.DefaultPageSettings.Margins = margins
-
-        ' Draw a picture.
-        ev.Graphics.DrawImage(slice.Image, (100), (100))
-
-        ' Indicate that this is the last page to print.
-        ev.HasMorePages = False
-    End Sub
-
-    
 
     Private Sub TrackBar1_ValueChanged(sender As Object, e As EventArgs) Handles TrackBar1.ValueChanged
         Dim layer As Integer = Int(TrackBar1.Value)
@@ -285,8 +249,52 @@ Public Class Form1
         Try
             slice.Load()
         Catch ex As Exception
-
         End Try
+    End Sub
+
+    Private Sub btnPrint_Click(sender As Object, e As EventArgs) Handles btnPrint.Click
+        If sliceDone = False Then
+            MessageBox.Show("Model not sliced yet!")
+            Return
+        End If
+        btnStop.Visible = True
+        btnPrint.Visible = False
+        TrackBar1.Enabled = False
+        Dim foundFile As String = ""
+        Dim layer As Integer = 0
+
+        'initial process
+
+        Do Until layer >= maxLayer
+            If printStop = True Then
+                printStop = False
+                Return
+            End If
+            TrackBar1.Value = layer
+            Try
+                'to do at every layer
+                pd.Print()
+
+            Catch ex As Exception
+                MessageBox.Show("An error occurred while printing", ex.ToString())
+            End Try
+            layer += 1
+        Loop
+
+        Return
+    End Sub
+
+    ' Specifies what happens when the PrintPage event is raised. 
+    Private Sub pd_PrintPage(sender As Object, ev As PrintPageEventArgs) Handles pd.PrintPage
+
+        Dim margins As New Margins(100, 100, 100, 100)
+        pd.DefaultPageSettings.Margins = margins
+
+        ' Draw a picture.
+        ev.Graphics.DrawImage(slice.Image, (100), (100))
+
+        ' Indicate that this is the last page to print.
+        ev.HasMorePages = False
     End Sub
 
     Private Sub btnStop_Click(sender As Object, e As EventArgs) Handles btnStop.Click
