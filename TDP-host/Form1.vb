@@ -20,6 +20,7 @@ Public Class Form1
     Dim pixel_per_mm_length As Integer = 11.8  'TBD
     Dim pixel_per_mm_width As Integer = 11.8    'TBD
 
+
     '=====================================================
     'Arduino communication
     'Reference:Visual Basic Serial Monitor (http://www.multiwingspan.co.uk/arduino.php?page=vb1 )
@@ -39,7 +40,6 @@ Public Class Form1
         End If
         If InStr(myString, "current temperature:") <> 0 Then
             getTempVal(myString)
-           
         End If
     End Sub
 
@@ -273,8 +273,12 @@ Public Class Form1
     End Sub
 
     Private Sub btnPrint_Click(sender As Object, e As EventArgs) Handles btnPrint.Click
-        If sliceDone = False Then
+        If sliceDone = True Then
             MessageBox.Show("Model not sliced yet!")
+            Return
+        End If
+        If sp.IsOpen = False Then
+            MessageBox.Show("Printer no connected yet!")
             Return
         End If
         btnStop.Visible = True
@@ -283,8 +287,29 @@ Public Class Form1
         Dim foundFile As String = ""
         Dim layer As Integer = 0
 
-        'initial process
+        If MessageBox.Show("Container already prepared?", "", MessageBoxButtons.YesNo) = 7 Then
+            Return
+        End If
 
+        '+++++++++++++++++++++++++++++++++
+        'Initial process
+        'Heating 
+        Me.btnSetTemp_Click(sender, e)
+        'If the target temperature is not entered, it will be set to a default value (60).
+        Try
+            targetTemperature = CDbl(txtTargetTemp.Text)
+        Catch ex As Exception
+            MessageBox.Show("Warning! The target temperature was set to 60 by default!")
+            sp.WriteLine("M104 60")
+            txtTargetTemp.Text = 60
+            targetTemperature = 60
+        End Try
+
+        'Spreader
+        sp.WriteLine("G0 R1")
+
+        '+++++++++++++++++++++++++++++++++++++
+        'To do at every layer
         Do Until layer >= maxLayer
             If printStop = True Then
                 printStop = False
@@ -292,7 +317,8 @@ Public Class Form1
             End If
             TrackBar1.Value = layer
             Try
-                'to do at every layer
+                sp.WriteLine("G28 X")
+
                 pd.Print()
 
             Catch ex As Exception
