@@ -65,6 +65,8 @@ Partial Class Form1
         Me.Label16 = New System.Windows.Forms.Label()
         Me.labelPrintbedPos = New System.Windows.Forms.Label()
         Me.labelFeederPos = New System.Windows.Forms.Label()
+        Me.DisplayTheSentCommands = New System.Windows.Forms.CheckBox()
+        Me.ToolTip1 = New System.Windows.Forms.ToolTip(Me.components)
         Me.GroupBox1.SuspendLayout()
         CType(Me.slice, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.TrackBar1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -149,11 +151,11 @@ Partial Class Form1
         '
         'txtIn
         '
-        Me.txtIn.Location = New System.Drawing.Point(423, 105)
+        Me.txtIn.Location = New System.Drawing.Point(423, 117)
         Me.txtIn.Multiline = True
         Me.txtIn.Name = "txtIn"
         Me.txtIn.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
-        Me.txtIn.Size = New System.Drawing.Size(395, 302)
+        Me.txtIn.Size = New System.Drawing.Size(395, 290)
         Me.txtIn.TabIndex = 1
         '
         'txtMessage
@@ -423,11 +425,23 @@ Partial Class Form1
         Me.labelFeederPos.Size = New System.Drawing.Size(0, 12)
         Me.labelFeederPos.TabIndex = 32
         '
+        'DisplayTheSentCommands
+        '
+        Me.DisplayTheSentCommands.AutoSize = True
+        Me.DisplayTheSentCommands.Location = New System.Drawing.Point(423, 95)
+        Me.DisplayTheSentCommands.Name = "DisplayTheSentCommands"
+        Me.DisplayTheSentCommands.Size = New System.Drawing.Size(174, 16)
+        Me.DisplayTheSentCommands.TabIndex = 34
+        Me.DisplayTheSentCommands.Text = "Display the sent commands"
+        Me.ToolTip1.SetToolTip(Me.DisplayTheSentCommands, "Ignore temperature checking command (m105)")
+        Me.DisplayTheSentCommands.UseVisualStyleBackColor = True
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(830, 454)
+        Me.Controls.Add(Me.DisplayTheSentCommands)
         Me.Controls.Add(Me.labelFeederPos)
         Me.Controls.Add(Me.labelPrintbedPos)
         Me.Controls.Add(Me.Label16)
@@ -511,5 +525,7 @@ Partial Class Form1
     Friend WithEvents Label16 As System.Windows.Forms.Label
     Friend WithEvents labelPrintbedPos As System.Windows.Forms.Label
     Friend WithEvents labelFeederPos As System.Windows.Forms.Label
+    Friend WithEvents DisplayTheSentCommands As System.Windows.Forms.CheckBox
+    Friend WithEvents ToolTip1 As System.Windows.Forms.ToolTip
 
 End Class

@@ -22,6 +22,9 @@ Public Class Form1
     Dim pixel_per_mm_length As Integer = 11.8  'TBD
     Dim pixel_per_mm_width As Integer = 11.8    'TBD
 
+    Dim isPosAcquired As Boolean = False
+
+
 
     '=====================================================
     'Arduino communication
@@ -37,9 +40,17 @@ Public Class Form1
     Sub ShowString(ByVal myString As String)
         'show the received string 
         'filter temperature checking,
-        If InStr(myString, "current temperature:") + InStr(myString, "received:m105") + InStr(myString, "received:M105") + InStr(myString, "Current positions:") + InStr(myString, "received:m114") + InStr(myString, "received:M114") = 0 Then
-            txtIn.AppendText(myString + Chr(10))
+        If InStr(myString, "current temperature:") + InStr(myString, "received:m105") + InStr(myString, "received:M105") = 0 Then
+            If DisplayTheSentCommands.Checked = False Then
+                If InStr(myString, "received:") = 0 Then
+                    txtIn.AppendText(myString + Chr(10))
+                End If
+            Else
+                txtIn.AppendText(myString + Chr(10))
+            End If
+
         End If
+
         If InStr(myString, "current temperature:") <> 0 Then
             getTempVal(myString)
         End If
@@ -323,7 +334,11 @@ Public Class Form1
             TrackBar1.Value = layer
             Try
                 sp.WriteLine("G28 X")
-
+                sp.WriteLine("m114")
+                Do Until isPosAcquired = True
+                Loop
+                sp.WriteLine("G0 Y" + (printbedPos + CDbl(layerHeight.Text)).ToString)    'zero point at upper
+                sp.WriteLine("G0 Z" + (feederPos - 2 * CDbl(layerHeight.Text)).ToString)  'zero point at upper
                 pd.Print()
 
             Catch ex As Exception
@@ -401,6 +416,7 @@ Public Class Form1
         feederPos = CDbl(tempStr)
         labelFeederPos.Text = tempStr
 
+        isPosAcquired = True
     End Sub
 
 End Class
