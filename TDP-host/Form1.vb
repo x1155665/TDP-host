@@ -17,6 +17,8 @@ Public Class Form1
     Dim maxLayer As Integer
     Dim targetTemperature As Double
     Dim currentTemperature As Double
+    Dim feederPos As Double
+    Dim printbedPos As Double
     Dim pixel_per_mm_length As Integer = 11.8  'TBD
     Dim pixel_per_mm_width As Integer = 11.8    'TBD
 
@@ -35,11 +37,14 @@ Public Class Form1
     Sub ShowString(ByVal myString As String)
         'show the received string 
         'filter temperature checking,
-        If InStr(myString, "current temperature:") + InStr(myString, "received:m105") + InStr(myString, "received:M105") = 0 Then
+        If InStr(myString, "current temperature:") + InStr(myString, "received:m105") + InStr(myString, "received:M105") + InStr(myString, "Current positions:") + InStr(myString, "received:m114") + InStr(myString, "received:M114") = 0 Then
             txtIn.AppendText(myString + Chr(10))
         End If
         If InStr(myString, "current temperature:") <> 0 Then
             getTempVal(myString)
+        End If
+        If InStr(myString, "Current positions:") <> 0 Then
+            getPosVal(myString)
         End If
     End Sub
 
@@ -373,6 +378,29 @@ Public Class Form1
             currentTemp.Text += Tempstr.Chars(pos)
             pos += 1
         Loop
+    End Sub
+
+    Private Sub getPosVal(myString As String)
+        Dim tempStr As String = ""
+        Dim readPos As Integer = InStr(myString, "Y") 'locate "Y"
+        readPos += 1 'locate val
+        Do Until myString.Chars(readPos) = " "
+            tempStr += myString.Chars(readPos)
+            readPos += 1
+        Loop
+        printbedPos = CDbl(tempStr)
+        labelPrintbedPos.Text = tempStr
+
+        tempStr = ""
+        readPos = InStr(myString, "Z") 'Locate "Z"
+        readPos += 1 'locate val
+        Do Until myString.Chars(readPos) = " "
+            tempStr += myString.Chars(readPos)
+            readPos += 1
+        Loop
+        feederPos = CDbl(tempStr)
+        labelFeederPos.Text = tempStr
+
     End Sub
 
 End Class

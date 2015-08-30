@@ -60,6 +60,11 @@ Partial Class Form1
         Me.currentTemp = New System.Windows.Forms.Label()
         Me.btnSetTemp = New System.Windows.Forms.Button()
         Me.TimerCheckTemp = New System.Windows.Forms.Timer(Me.components)
+        Me.Label14 = New System.Windows.Forms.Label()
+        Me.Label15 = New System.Windows.Forms.Label()
+        Me.Label16 = New System.Windows.Forms.Label()
+        Me.labelPrintbedPos = New System.Windows.Forms.Label()
+        Me.labelFeederPos = New System.Windows.Forms.Label()
         Me.GroupBox1.SuspendLayout()
         CType(Me.slice, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.TrackBar1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -172,7 +177,7 @@ Partial Class Form1
         '
         'btnPrint
         '
-        Me.btnPrint.Location = New System.Drawing.Point(279, 352)
+        Me.btnPrint.Location = New System.Drawing.Point(279, 330)
         Me.btnPrint.Name = "btnPrint"
         Me.btnPrint.Size = New System.Drawing.Size(75, 23)
         Me.btnPrint.TabIndex = 4
@@ -181,7 +186,7 @@ Partial Class Form1
         '
         'slice
         '
-        Me.slice.Location = New System.Drawing.Point(26, 151)
+        Me.slice.Location = New System.Drawing.Point(28, 117)
         Me.slice.Name = "slice"
         Me.slice.Size = New System.Drawing.Size(330, 195)
         Me.slice.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom
@@ -212,7 +217,7 @@ Partial Class Form1
         'Label5
         '
         Me.Label5.AutoSize = True
-        Me.Label5.Location = New System.Drawing.Point(26, 12)
+        Me.Label5.Location = New System.Drawing.Point(26, 18)
         Me.Label5.Name = "Label5"
         Me.Label5.Size = New System.Drawing.Size(29, 12)
         Me.Label5.TabIndex = 9
@@ -222,7 +227,7 @@ Partial Class Form1
         'Label6
         '
         Me.Label6.AutoSize = True
-        Me.Label6.Location = New System.Drawing.Point(24, 118)
+        Me.Label6.Location = New System.Drawing.Point(24, 93)
         Me.Label6.Name = "Label6"
         Me.Label6.Size = New System.Drawing.Size(83, 12)
         Me.Label6.TabIndex = 10
@@ -230,7 +235,7 @@ Partial Class Form1
         '
         'layerHeight
         '
-        Me.layerHeight.Location = New System.Drawing.Point(277, 115)
+        Me.layerHeight.Location = New System.Drawing.Point(279, 90)
         Me.layerHeight.Name = "layerHeight"
         Me.layerHeight.Size = New System.Drawing.Size(54, 21)
         Me.layerHeight.TabIndex = 11
@@ -240,7 +245,7 @@ Partial Class Form1
         'Label7
         '
         Me.Label7.AutoSize = True
-        Me.Label7.Location = New System.Drawing.Point(337, 118)
+        Me.Label7.Location = New System.Drawing.Point(339, 93)
         Me.Label7.Name = "Label7"
         Me.Label7.Size = New System.Drawing.Size(17, 12)
         Me.Label7.TabIndex = 12
@@ -267,7 +272,7 @@ Partial Class Form1
         '
         'btnSlice
         '
-        Me.btnSlice.Location = New System.Drawing.Point(28, 352)
+        Me.btnSlice.Location = New System.Drawing.Point(26, 330)
         Me.btnSlice.Name = "btnSlice"
         Me.btnSlice.Size = New System.Drawing.Size(75, 23)
         Me.btnSlice.TabIndex = 16
@@ -277,14 +282,14 @@ Partial Class Form1
         'TrackBar1
         '
         Me.TrackBar1.Enabled = False
-        Me.TrackBar1.Location = New System.Drawing.Point(120, 352)
+        Me.TrackBar1.Location = New System.Drawing.Point(107, 330)
         Me.TrackBar1.Name = "TrackBar1"
         Me.TrackBar1.Size = New System.Drawing.Size(153, 45)
         Me.TrackBar1.TabIndex = 17
         '
         'btnStop
         '
-        Me.btnStop.Location = New System.Drawing.Point(279, 352)
+        Me.btnStop.Location = New System.Drawing.Point(279, 330)
         Me.btnStop.Name = "btnStop"
         Me.btnStop.Size = New System.Drawing.Size(75, 23)
         Me.btnStop.TabIndex = 18
@@ -295,7 +300,7 @@ Partial Class Form1
         'Label10
         '
         Me.Label10.AutoSize = True
-        Me.Label10.Location = New System.Drawing.Point(24, 75)
+        Me.Label10.Location = New System.Drawing.Point(26, 66)
         Me.Label10.Name = "Label10"
         Me.Label10.Size = New System.Drawing.Size(41, 12)
         Me.Label10.TabIndex = 19
@@ -303,7 +308,7 @@ Partial Class Form1
         '
         'txtScale
         '
-        Me.txtScale.Location = New System.Drawing.Point(279, 72)
+        Me.txtScale.Location = New System.Drawing.Point(281, 63)
         Me.txtScale.Name = "txtScale"
         Me.txtScale.Size = New System.Drawing.Size(52, 21)
         Me.txtScale.TabIndex = 20
@@ -313,7 +318,7 @@ Partial Class Form1
         'Label11
         '
         Me.Label11.AutoSize = True
-        Me.Label11.Location = New System.Drawing.Point(343, 75)
+        Me.Label11.Location = New System.Drawing.Point(343, 66)
         Me.Label11.Name = "Label11"
         Me.Label11.Size = New System.Drawing.Size(11, 12)
         Me.Label11.TabIndex = 21
@@ -322,7 +327,7 @@ Partial Class Form1
         'Label3
         '
         Me.Label3.AutoSize = True
-        Me.Label3.Location = New System.Drawing.Point(26, 334)
+        Me.Label3.Location = New System.Drawing.Point(26, 315)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(41, 12)
         Me.Label3.TabIndex = 22
@@ -331,7 +336,7 @@ Partial Class Form1
         '
         'txtTargetTemp
         '
-        Me.txtTargetTemp.Location = New System.Drawing.Point(203, 421)
+        Me.txtTargetTemp.Location = New System.Drawing.Point(203, 391)
         Me.txtTargetTemp.Name = "txtTargetTemp"
         Me.txtTargetTemp.Size = New System.Drawing.Size(45, 21)
         Me.txtTargetTemp.TabIndex = 23
@@ -339,7 +344,7 @@ Partial Class Form1
         'Label12
         '
         Me.Label12.AutoSize = True
-        Me.Label12.Location = New System.Drawing.Point(26, 424)
+        Me.Label12.Location = New System.Drawing.Point(24, 395)
         Me.Label12.Name = "Label12"
         Me.Label12.Size = New System.Drawing.Size(113, 12)
         Me.Label12.TabIndex = 24
@@ -348,7 +353,7 @@ Partial Class Form1
         'Label13
         '
         Me.Label13.AutoSize = True
-        Me.Label13.Location = New System.Drawing.Point(26, 398)
+        Me.Label13.Location = New System.Drawing.Point(24, 372)
         Me.Label13.Name = "Label13"
         Me.Label13.Size = New System.Drawing.Size(119, 12)
         Me.Label13.TabIndex = 25
@@ -357,14 +362,14 @@ Partial Class Form1
         'currentTemp
         '
         Me.currentTemp.AutoSize = True
-        Me.currentTemp.Location = New System.Drawing.Point(201, 400)
+        Me.currentTemp.Location = New System.Drawing.Point(206, 372)
         Me.currentTemp.Name = "currentTemp"
         Me.currentTemp.Size = New System.Drawing.Size(0, 12)
         Me.currentTemp.TabIndex = 26
         '
         'btnSetTemp
         '
-        Me.btnSetTemp.Location = New System.Drawing.Point(281, 419)
+        Me.btnSetTemp.Location = New System.Drawing.Point(285, 389)
         Me.btnSetTemp.Name = "btnSetTemp"
         Me.btnSetTemp.Size = New System.Drawing.Size(73, 23)
         Me.btnSetTemp.TabIndex = 27
@@ -375,11 +380,59 @@ Partial Class Form1
         '
         Me.TimerCheckTemp.Interval = 1000
         '
+        'Label14
+        '
+        Me.Label14.AutoSize = True
+        Me.Label14.Location = New System.Drawing.Point(24, 415)
+        Me.Label14.Name = "Label14"
+        Me.Label14.Size = New System.Drawing.Size(47, 12)
+        Me.Label14.TabIndex = 28
+        Me.Label14.Text = "Height:"
+        '
+        'Label15
+        '
+        Me.Label15.AutoSize = True
+        Me.Label15.Location = New System.Drawing.Point(105, 415)
+        Me.Label15.Name = "Label15"
+        Me.Label15.Size = New System.Drawing.Size(143, 12)
+        Me.Label15.TabIndex = 29
+        Me.Label15.Text = "Bottom of printing zone"
+        '
+        'Label16
+        '
+        Me.Label16.AutoSize = True
+        Me.Label16.Location = New System.Drawing.Point(105, 433)
+        Me.Label16.Name = "Label16"
+        Me.Label16.Size = New System.Drawing.Size(101, 12)
+        Me.Label16.TabIndex = 30
+        Me.Label16.Text = "Bottom of feeder"
+        '
+        'labelPrintbedPos
+        '
+        Me.labelPrintbedPos.AutoSize = True
+        Me.labelPrintbedPos.Location = New System.Drawing.Point(286, 415)
+        Me.labelPrintbedPos.Name = "labelPrintbedPos"
+        Me.labelPrintbedPos.Size = New System.Drawing.Size(0, 12)
+        Me.labelPrintbedPos.TabIndex = 31
+        '
+        'labelFeederPos
+        '
+        Me.labelFeederPos.AutoSize = True
+        Me.labelFeederPos.Location = New System.Drawing.Point(286, 433)
+        Me.labelFeederPos.Name = "labelFeederPos"
+        Me.labelFeederPos.Size = New System.Drawing.Size(0, 12)
+        Me.labelFeederPos.TabIndex = 32
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(830, 454)
+        Me.Controls.Add(Me.labelFeederPos)
+        Me.Controls.Add(Me.labelPrintbedPos)
+        Me.Controls.Add(Me.Label16)
+        Me.Controls.Add(Me.Label15)
+        Me.Controls.Add(Me.Label14)
         Me.Controls.Add(Me.btnSetTemp)
         Me.Controls.Add(Me.currentTemp)
         Me.Controls.Add(Me.Label13)
@@ -453,5 +506,10 @@ Partial Class Form1
     Friend WithEvents currentTemp As System.Windows.Forms.Label
     Friend WithEvents btnSetTemp As System.Windows.Forms.Button
     Friend WithEvents TimerCheckTemp As System.Windows.Forms.Timer
+    Friend WithEvents Label14 As System.Windows.Forms.Label
+    Friend WithEvents Label15 As System.Windows.Forms.Label
+    Friend WithEvents Label16 As System.Windows.Forms.Label
+    Friend WithEvents labelPrintbedPos As System.Windows.Forms.Label
+    Friend WithEvents labelFeederPos As System.Windows.Forms.Label
 
 End Class
