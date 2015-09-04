@@ -24,12 +24,13 @@ Public Class Form1
 
     Dim isPosAcquired As Boolean = False
 
+    Dim isCarriageHome As Boolean
+
 
 
     '=====================================================
     'Arduino communication
     'Reference:Visual Basic Serial Monitor (http://www.multiwingspan.co.uk/arduino.php?page=vb1 )
-    '======================================================
 
     Private Sub GetSerialPortNames()
         For Each serialport As String In My.Computer.Ports.SerialPortNames
@@ -56,6 +57,9 @@ Public Class Form1
         End If
         If InStr(myString, "Current positions:") <> 0 Then
             getPosVal(myString)
+        End If
+        If InStr(myString, "x to home") <> 0 Then
+            isCarriageHome = True
         End If
     End Sub
 
@@ -116,8 +120,13 @@ Public Class Form1
     End Sub
 
     Private Sub SerialPort_DataReceived(ByVal sender As Object, ByVal e As System.IO.Ports.SerialDataReceivedEventArgs) Handles sp.DataReceived
-        Dim str As String = sp.ReadLine()
-        Invoke(myDelegate, str)
+        Try
+            Dim str As String = sp.ReadLine()
+            Invoke(myDelegate, str)
+        Catch ex As Exception
+            MessageBox.Show("Oops!Something happened when receiving messsage from Arduino:(")
+        End Try
+        
     End Sub
 
     Private Sub btnSend_Click(sender As Object, e As EventArgs) Handles btnSend.Click
@@ -150,7 +159,6 @@ Public Class Form1
 
     '=============================================
     'Printing
-    '=============================================
 
     Private Sub btnChooseModel_Click(sender As Object, e As EventArgs) Handles btnChooseModel.Click
         modelLoc.ShowDialog() 'show choosing dialog
@@ -289,7 +297,7 @@ Public Class Form1
     End Sub
 
     Private Sub btnPrint_Click(sender As Object, e As EventArgs) Handles btnPrint.Click
-        If sliceDone = True Then
+        If sliceDone = False Then
             MessageBox.Show("Model not sliced yet!")
             Return
         End If
@@ -304,29 +312,34 @@ Public Class Form1
         Dim layer As Integer = 0
 
         If MessageBox.Show("Container already prepared?", "", MessageBoxButtons.YesNo) = 7 Then
+            btnStop.Visible = False
+            btnPrint.Visible = True
+            TrackBar1.Enabled = True
             Return
         End If
 
         '+++++++++++++++++++++++++++++++++
-        'Initial process
+        'Initial processes
         'Heating 
-        Me.btnSetTemp_Click(sender, e)
         'If the target temperature is not entered, it will be set to a default value (60).
         Try
             targetTemperature = CDbl(txtTargetTemp.Text)
         Catch ex As Exception
             MessageBox.Show("Warning! The target temperature was set to 60 by default!")
-            sp.WriteLine("M104 60")
-            txtTargetTemp.Text = 60
+            txtTargetTemp.Text = "60"
             targetTemperature = 60
         End Try
+        sp.WriteLine("M104 " + txtTargetTemp.Text)
+
 
         'Spreader
         sp.WriteLine("G0 R1")
+        '++++++++++++++++++++++++++++++++++
 
-        '+++++++++++++++++++++++++++++++++++++
-        'To do at every layer
         Do Until layer >= maxLayer
+            '+++++++++++++++++++++++++++++++++++++
+            'To do at every layer
+            TrackBar1.Value = layer
             If printStop = True Then
                 printStop = False
                 Return
@@ -336,23 +349,40 @@ Public Class Form1
                 sp.WriteLine("G28 X")
                 sp.WriteLine("m114")
                 Do Until isPosAcquired = True
+                    If printStop = True Then
+                        End
+                        MessageBox.Show("closing")
+                    End If
+                    MessageBox.Show("closing")
                 Loop
                 sp.WriteLine("G0 Y" + (printbedPos + CDbl(layerHeight.Text)).ToString)    'zero point at upper
                 sp.WriteLine("G0 Z" + (feederPos - 2 * CDbl(layerHeight.Text)).ToString)  'zero point at upper
-                pd.Print()
+
+                'The following processes can be repeated to print more ink on one layer.
+                '--------------------------------------------------
+                sp.WriteLine("G28 X")  'home carriage
+                Do Until isCarriageHome = True   'wait 
+                Loop
+                pd.Print()   'use windows printing interface to print the slice
+                isCarriageHome = False
+                '------------------------------------------------------
 
             Catch ex As Exception
                 MessageBox.Show("An error occurred while printing", ex.ToString())
             End Try
             layer += 1
+            '+++++++++++++++++++++++++++++++++++++++++
         Loop
+        btnStop.Visible = False
+        btnPrint.Visible = True
+        printStop = True
+        TrackBar1.Enabled = True
 
-        Return
     End Sub
 
     ' Specifies what happens when the PrintPage event is raised. 
     Private Sub pd_PrintPage(sender As Object, ev As PrintPageEventArgs) Handles pd.PrintPage
-
+        'The detailed parameters are not determined yet!
         Dim margins As New Margins(100, 100, 100, 100)
         pd.DefaultPageSettings.Margins = margins
 
@@ -367,11 +397,12 @@ Public Class Form1
         btnStop.Visible = False
         btnPrint.Visible = True
         printStop = True
+        TrackBar1.Enabled = True
     End Sub
 
     '==================================
     'Thermo
-    '==================================
+
     Private Sub btnSetTemp_Click(sender As Object, e As EventArgs) Handles btnSetTemp.Click
         Try
             targetTemperature = CDbl(txtTargetTemp.Text)
@@ -381,12 +412,12 @@ Public Class Form1
         End Try
     End Sub
 
-
     Private Sub TimerCheckTemp_Tick(sender As Object, e As EventArgs) Handles TimerCheckTemp.Tick
         sp.WriteLine("M105")
     End Sub
 
     Private Sub getTempVal(ByVal Tempstr As String)
+        '（The received codes should be like: "current temperature:60.00")
         currentTemp.Text = ""
         Dim pos As Integer = 20
         Do Until pos >= Tempstr.Length
@@ -394,6 +425,9 @@ Public Class Form1
             pos += 1
         Loop
     End Sub
+
+    '==================================
+    'position（The received codes should be like:"Current positions: X:0.00 Y:0.00 Z:0.00 E:0.00"） 
 
     Private Sub getPosVal(myString As String)
         Dim tempStr As String = ""
