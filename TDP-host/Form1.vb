@@ -349,11 +349,7 @@ Public Class Form1
                 sp.WriteLine("G28 X")
                 sp.WriteLine("m114")
                 Do Until isPosAcquired = True
-                    If printStop = True Then
-                        End
-                        MessageBox.Show("closing")
-                    End If
-                    MessageBox.Show("closing")
+                    Application.DoEvents()
                 Loop
                 sp.WriteLine("G0 Y" + (printbedPos + CDbl(layerHeight.Text)).ToString)    'zero point at upper
                 sp.WriteLine("G0 Z" + (feederPos - 2 * CDbl(layerHeight.Text)).ToString)  'zero point at upper
@@ -362,13 +358,14 @@ Public Class Form1
                 '--------------------------------------------------
                 sp.WriteLine("G28 X")  'home carriage
                 Do Until isCarriageHome = True   'wait 
+                    Application.DoEvents()
                 Loop
                 pd.Print()   'use windows printing interface to print the slice
                 isCarriageHome = False
                 '------------------------------------------------------
 
             Catch ex As Exception
-                MessageBox.Show("An error occurred while printing", ex.ToString())
+                MessageBox.Show(ex.ToString(), "An error occurred while printing", MessageBoxButtons.OK, MessageBoxIcon.Error)
             End Try
             layer += 1
             '+++++++++++++++++++++++++++++++++++++++++
