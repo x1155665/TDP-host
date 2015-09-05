@@ -1,12 +1,13 @@
 ﻿Imports System.IO.Ports
 Imports System.Drawing.Printing
 Imports System.IO
+Imports System.Threading
 
 
 Public Class Form1
     Dim WithEvents sp As New SerialPort
+    Dim printThread As Thread
     Dim sliceDone As Boolean = False
-    Dim printStop As Boolean = False
     Dim loadDone As Boolean = False
     Dim xHeight As Double
     Dim yHeight As Double
@@ -25,7 +26,6 @@ Public Class Form1
     Dim isPosAcquired As Boolean = False
 
     Dim isCarriageHome As Boolean
-
 
 
     '=====================================================
@@ -154,6 +154,9 @@ Public Class Form1
         If sp.IsOpen() Then
             MessageBox.Show("Disconnect before closing")
             e.Cancel = True
+        End If
+        If printThread.IsAlive = True Then
+            printThread.Abort()
         End If
     End Sub
 
@@ -308,8 +311,6 @@ Public Class Form1
         btnStop.Visible = True
         btnPrint.Visible = False
         TrackBar1.Enabled = False
-        Dim foundFile As String = ""
-        Dim layer As Integer = 0
 
         If MessageBox.Show("Container already prepared?", "", MessageBoxButtons.YesNo) = 7 Then
             btnStop.Visible = False
@@ -317,34 +318,33 @@ Public Class Form1
             TrackBar1.Enabled = True
             Return
         End If
+        printThread = New Thread(AddressOf runPrint)
+        printThread.Start()
+    End Sub
 
+    Private Sub runPrint()
         '+++++++++++++++++++++++++++++++++
         'Initial processes
         'Heating 
         'If the target temperature is not entered, it will be set to a default value (60).
         Try
             targetTemperature = CDbl(txtTargetTemp.Text)
+            sp.WriteLine("M104 " + txtTargetTemp.Text)
         Catch ex As Exception
             MessageBox.Show("Warning! The target temperature was set to 60 by default!")
-            txtTargetTemp.Text = "60"
+            SetText("60") 'thread-safe
             targetTemperature = 60
         End Try
-        sp.WriteLine("M104 " + txtTargetTemp.Text)
-
 
         'Spreader
         sp.WriteLine("G0 R1")
         '++++++++++++++++++++++++++++++++++
 
+        Dim layer As Integer = 0
         Do Until layer >= maxLayer
             '+++++++++++++++++++++++++++++++++++++
             'To do at every layer
-            TrackBar1.Value = layer
-            If printStop = True Then
-                printStop = False
-                Return
-            End If
-            TrackBar1.Value = layer
+            SetTrackbatVal(layer) 'thread-safe
             Try
                 sp.WriteLine("G28 X")
                 sp.WriteLine("m114")
@@ -372,9 +372,33 @@ Public Class Form1
         Loop
         btnStop.Visible = False
         btnPrint.Visible = True
-        printStop = True
         TrackBar1.Enabled = True
+    End Sub
 
+    Delegate Sub SetTextCallback([text] As String)
+
+    Private Sub SetText(ByVal [text] As String)
+
+        ' InvokeRequired required compares the thread ID of the
+        ' calling thread to the thread ID of the creating thread.
+        ' If these threads are different, it returns true.
+        If txtTargetTemp.InvokeRequired Then
+            Dim d As New SetTextCallback(AddressOf SetText)
+            Me.Invoke(d, New Object() {[text]})
+        Else
+            txtTargetTemp.Text = [text]
+        End If
+    End Sub
+
+    Delegate Sub SetTrackbatValCallback(layer As Integer)
+
+    Private Sub SetTrackbatVal(ByVal layer As Integer)
+        If TrackBar1.InvokeRequired Then
+            Dim f As New SetTrackbatValCallback(AddressOf SetTrackbatVal)
+            Me.Invoke(f, New Object() {layer})
+        Else
+            TrackBar1.Value = layer
+        End If
     End Sub
 
     ' Specifies what happens when the PrintPage event is raised. 
@@ -391,9 +415,9 @@ Public Class Form1
     End Sub
 
     Private Sub btnStop_Click(sender As Object, e As EventArgs) Handles btnStop.Click
+        printThread.Abort()
         btnStop.Visible = False
         btnPrint.Visible = True
-        printStop = True
         TrackBar1.Enabled = True
     End Sub
 
@@ -405,7 +429,7 @@ Public Class Form1
             targetTemperature = CDbl(txtTargetTemp.Text)
             sp.WriteLine("M104 " + txtTargetTemp.Text) 'M104
         Catch ex As Exception
-            MessageBox.Show("Please enter the target Temperature! And in the right way!")
+            MessageBox.Show("Please enter the target Temperature!")
         End Try
     End Sub
 

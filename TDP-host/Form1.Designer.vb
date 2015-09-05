@@ -342,6 +342,7 @@ Partial Class Form1
         Me.txtTargetTemp.Name = "txtTargetTemp"
         Me.txtTargetTemp.Size = New System.Drawing.Size(45, 21)
         Me.txtTargetTemp.TabIndex = 23
+        Me.txtTargetTemp.Text = "60"
         '
         'Label12
         '
